@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เที่ยวตรัง - TRANG TRAVEL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --secondary: #0f172a;
+            --accent: #f59e0b;
+            --bg-light: #f8fafc;
+            --white: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Prompt', sans-serif;
+            line-height: 1.6;
+            color: var(--secondary);
+            background-color: var(--bg-light);
+            padding-bottom: 50px;
+        }
+
+        /* --- UI & Animations --- */
+        .scroll-progress {
+            position: fixed; top: 0; left: 0; width: 0%; height: 4px;
+            background: var(--primary); z-index: 2001; transition: width 0.1s;
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 0.8rem 0;
+            position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-container {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 1rem; flex-wrap: wrap;
+        }
+
+        .lang-switch {
+            display: flex; gap: 5px; margin-bottom: 10px; width: 100%; justify-content: flex-end;
+        }
+
+        .lang-btn {
+            padding: 2px 10px; font-size: 0.8rem; border: 1px solid #ddd;
+            background: white; cursor: pointer; border-radius: 4px; font-family: 'Prompt';
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .logo { color: var(--primary); font-size: 1.4rem; font-weight: 700; text-decoration: none; }
+        .nav-menu { display: flex; gap: 0.3rem; overflow-x: auto; padding-bottom: 5px; }
+
+        .nav-menu button {
+            background: none; border: none; font-family: 'Prompt'; font-size: 0.95rem;
+            color: #64748b; cursor: pointer; padding: 0.5rem 0.8rem; border-radius: 20px;
+            font-weight: 500; white-space: nowrap; transition: all 0.2s;
+        }
+
+        .nav-menu button.active { color: var(--white); background-color: var(--primary); }
+
+        /* Hero */
+        .hero {
+            position: relative; height: 450px;
+            background: url('https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2039') center/cover;
+            display: flex; align-items: center; justify-content: center; text-align: center; color: white;
+            margin-bottom: 2rem;
+        }
+        .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.5)); }
+        .hero-content { position: relative; z-index: 1; padding: 1rem; }
+        .hero-content h1 { animation: slideDown 1s ease-out; }
+        .hero-content p { animation: fadeIn 1.5s ease-out; }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Sections */
+        section { display: none; padding: 1rem; max-width: 1200px; margin: 0 auto; transition: opacity 0.4s ease; }
+        section.active { display: block; opacity: 1; }
+
+        .section-header { text-align: center; margin-bottom: 2rem; }
+        h2 { font-size: 1.8rem; color: var(--secondary); border-left: 5px solid var(--primary); padding-left: 15px; display: inline-block; }
+
+        /* Grid & Cards */
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        
+        .card { 
+            background: var(--white); border-radius: 16px; overflow: hidden; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer; position: relative; 
+            border: 1px solid #e2e8f0; opacity: 0; transform: translateY(30px);
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .card.reveal { opacity: 1; transform: translateY(0); }
+
+        .card:hover { 
+            transform: translateY(-12px) scale(1.02) !important; 
+            border-color: var(--primary);
+            box-shadow: 0 20px 25px -5px rgba(14, 165, 233, 0.2) !important;
+        }
+        
+        .card::after { 
+            content: attr(data-view-text); position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; 
+            padding: 10px 20px; border-radius: 30px; opacity: 0; transition: 0.3s; pointer-events: none; 
+        }
+        .card:hover::after { opacity: 1; }
+
+        .card-img { height: 220px; width: 100%; object-fit: cover; }
+        .card-body { padding: 1.5rem; }
+        .tag { display: inline-block; background: #e0f2fe; color: var(--primary); padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.8rem; }
+        .card-desc { color: #64748b; font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* Modal */
+        .modal-overlay { 
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
+            z-index: 2000; justify-content: center; align-items: center; padding: 1rem; 
+            backdrop-filter: blur(5px); transition: all 0.3s;
+        }
+        .modal-content { 
+            background: white; width: 100%; max-width: 800px; max-height: 90vh; 
+            border-radius: 20px; overflow-y: auto; position: relative;
+            transform: scale(0.8); opacity: 0; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); opacity: 1; }
+
+        .close-btn { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.9); border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; z-index: 10; }
+        .modal-header-img { width: 100%; height: 350px; object-fit: cover; }
+        .modal-body { padding: 2rem; }
+        .modal-info-list { margin: 1.5rem 0; background: #f1f5f9; padding: 1.5rem; border-radius: 12px; }
+        .modal-info-list li { list-style: none; margin-bottom: 0.8rem; display: flex; gap: 10px; font-size: 0.95rem; }
+        .modal-info-list li::before { content: '📍'; }
+
+        /* Form */
+        .form-box { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 600px; margin: 0 auto; }
+        .rating-box { display: flex; flex-direction: row-reverse; justify-content: center; gap: 5px; font-size: 2.5rem; margin-bottom: 1rem; }
+        .rating-box input { display: none; }
+        .rating-box label { color: #cbd5e1; cursor: pointer; transition: transform 0.2s; }
+        .rating-box label:active { transform: scale(1.4); }
+        .rating-box label:hover, .rating-box label:hover ~ label, .rating-box input:checked ~ label { color: var(--accent); }
+        .form-input { width: 100%; padding: 0.8rem; border: 1px solid #e2e8f0; border-radius: 10px; font-family: 'Prompt'; margin-bottom: 1rem; }
+        .submit-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 1rem; border-radius: 10px; font-weight: 600; cursor: pointer; font-family: 'Prompt'; transition: all 0.2s; }
+        .submit-btn:active { transform: scale(0.95); }
+
+        .profile-card { text-align: center; background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 500px; margin: 0 auto; }
+        .profile-img { width: 150px; height: 150px; border-radius: 50%; border: 5px solid var(--primary); margin-bottom: 1.5rem; object-fit: cover; }
+
+        footer { background: var(--secondary); color: white; text-align: center; padding: 2rem; margin-top: 3rem; }
+    </style>
+</head>
+<body>
+    <div class="scroll-progress" id="scrollBar"></div>
+
+    <nav>
+        <div class="nav-container">
+            <div class="lang-switch">
+                <button class="lang-btn active" onclick="changeLang('th')">TH</button>
+                <button class="lang-btn" onclick="changeLang('en')">EN</button>
+                <button class="lang-btn" onclick="changeLang('cn')">CN</button>
+            </div>
+            <a href="#" class="logo" onclick="switchTab('home')">🏝️ TRANG TRAVEL</a>
+            <div class="nav-menu">
+                <button onclick="switchTab('home')" class="active" id="btn-home" data-key="nav-home">หน้าแรก</button>
+                <button onclick="switchTab('attractions')" id="btn-attractions" data-key="nav-att">ที่เที่ยว</button>
+                <button onclick="switchTab('food')" id="btn-food" data-key="nav-food">ของกิน</button>
+                <button onclick="switchTab('hotels')" id="btn-hotels" data-key="nav-hotel">ที่พัก</button>
+                <button onclick="switchTab('satisfaction')" id="btn-satisfaction" data-key="nav-rate">ความพึงพอใจ</button>
+                <button onclick="switchTab('contact')" id="btn-contact" data-key="nav-contact">ผู้สร้าง</button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModalBtn()">×</button>
+            <div id="modal-dynamic-content"></div>
+        </div>
+    </div>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1 data-key="hero-title">เที่ยวตรัง...ต้องปังกว่าเดิม</h1>
+            <p data-key="hero-sub">รวม 27 จุดเช็คอิน กิน เที่ยว พัก ครบจบในที่เดียว</p>
+        </div>
+    </div>
+
+    <section id="home" class="active">
+        <div class="section-header"><h2 data-key="home-h">ไฮไลท์แนะนำ</h2></div>
+        <div class="grid-container" id="home-grid"></div>
+    </section>
+
+    <section id="attractions">
+        <div class="section-header"><h2 data-key="att-h">9 ที่เที่ยวห้ามพลาด</h2></div>
+        <div class="grid-container" id="att-grid"></div>
+    </section>
+
+    <section id="food">
+        <div class="section-header"><h2 data-key="food-h">9 เมนูเด็ดเมืองตรัง</h2></div>
+        <div class="grid-container" id="food-grid"></div>
+    </section>
+
+    <section id="hotels">
+        <div class="section-header"><h2 data-key="hotel-h">9 ที่พักแนะนำ</h2></div>
+        <div class="grid-container" id="hotel-grid"></div>
+    </section>
+
+    <section id="satisfaction">
+        <div class="section-header"><h2 data-key="rate-h">คะแนนความพึงพอใจ</h2></div>
+        <div class="form-box">
+            <form action="https://formspree.io/f/mlgrldoq" method="POST">
+                <div class="rating-box">
+                    <input type="radio" id="s5" name="rating" value="5"><label for="s5">★</label>
+                    <input type="radio" id="s4" name="rating" value="4"><label for="s4">★</label>
+                    <input type="radio" id="s3" name="rating" value="3"><label for="s3">★</label>
+                    <input type="radio" id="s2" name="rating" value="2"><label for="s2">★</label>
+                    <input type="radio" id="s1" name="rating" value="1"><label for="s1">★</label>
+                </div>
+                <input type="text" name="name" class="form-input" data-placeholder="ph-name" required>
+                <textarea name="comment" class="form-input" rows="4" data-placeholder="ph-msg"></textarea>
+                <button type="submit" class="submit-btn" data-key="btn-send">ส่งข้อมูล</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="contact">
+        <div class="section-header"><h2 data-key="contact-h">ผู้สร้างเว็บไซต์</h2></div>
+        <div class="profile-card">
+            <img src="pee.jfif" class="profile-img" alt="Creator">
+            <h3 data-key="dev-name">นายศิวกร ลุ้งกี่</h3>
+            <p data-key="dev-fac">คณะเทคโนโลยีสารสนเทศ</p>
+            <p>Email: tongteaw.ws@gmail.com</p>
+            <p data-key="dev-college">วิทยาลัยอาชีวศึกษาโปลีเทคนิคตรัง</p>
+            <p data-key="dev-purpose">จัดทำขึ้นเพื่อสนับสนุนการท่องเที่ยวจังหวัดตรัง</p>
+        </div>
+    </section>
+
+    <script>
+        const i18n = {
+            th: {
+                "nav-home": "หน้าแรก", "nav-att": "ที่เที่ยว", "nav-food": "ของกิน", "nav-hotel": "ที่พัก", "nav-rate": "ประเมิน", "nav-contact": "ผู้สร้าง",
+                "hero-title": "เที่ยวตรัง...ต้องปังกว่าเดิม", "hero-sub": "รวม 27 จุดเช็คอิน กิน เที่ยว พัก ครบจบในที่เดียว",
+                "home-h": "ไฮไลท์แนะนำ", "att-h": "9 ที่เที่ยวห้ามพลาด", "food-h": "9 เมนูเด็ดเมืองตรัง", "hotel-h": "9 ที่พักแนะนำ",
+                "rate-h": "คะแนนความพึงพอใจ", "ph-name": "ชื่อผู้ประเมิน", "ph-msg": "ความคิดเห็นเพิ่มเติม...", "btn-send": "ส่งข้อมูล",
+                "contact-h": "ผู้สร้างเว็บไซต์", "dev-name": "นายศิวกร ลุ้งกี่", "dev-fac": "คณะเทคโนโลยีสารสนเทศ",
+                "dev-college": "วิทยาลัยอาชีวศึกษาโปลีเทคนิคตรัง", "dev-purpose": "จัดทำขึ้นเพื่อสนับสนุนการท่องเที่ยวจังหวัดตรัง",
+                "footer": "© 2025 TRANG TRAVEL - มนต์เสน่ห์แห่งอันดามัน", "view-btn": "🔍 ดูรายละเอียด",
+                "act": "กิจกรรม:", "go": "การเดินทาง:", "tip": "เกร็ดความรู้:"
+            },
+            en: {
+                "nav-home": "Home", "nav-att": "Places", "nav-food": "Eat", "nav-hotel": "Stay", "nav-rate": "Review", "nav-contact": "Creator",
+                "hero-title": "Trang... The Charm of Andaman", "hero-sub": "27 check-in spots for Eat, Travel, and Stay",
+                "home-h": "Highlights", "att-h": "9 Must-Visit Places", "food-h": "9 Signature Dishes", "hotel-h": "9 Recommended Stays",
+                "rate-h": "Satisfaction Survey", "ph-name": "Your Name", "ph-msg": "Additional Comments...", "btn-send": "Submit",
+                "contact-h": "Website Creator", "dev-name": "Mr. Siwakorn Lungkee", "dev-fac": "Information Technology Faculty",
+                "dev-college": "Trang Polytechnic Vocational College", "dev-purpose": "Created to support tourism in Trang Province",
+                "footer": "© 2025 TRANG TRAVEL - Best of Andaman", "view-btn": "🔍 View Detail",
+                "act": "Activities:", "go": "How to get there:", "tip": "Tip:"
+            },
+            cn: {
+                "nav-home": "首页", "nav-att": "景点", "nav-food": "美食", "nav-hotel": "住宿", "nav-rate": "评价", "nav-contact": "开发者",
+                "hero-title": "董里旅游... 开启完美旅程", "hero-sub": "27 个吃喝玩乐打卡点",
+                "home-h": "推荐亮点", "att-h": "9 个必去景点", "food-h": "9 道招牌美食", "hotel-h": "9 家推荐住宿",
+                "rate-h": "满意度调查", "ph-name": "您的姓名", "ph-msg": "您的意见...", "btn-send": "提交",
+                "contact-h": "网站开发者", "dev-name": "思瓦功 先生", "dev-fac": "信息技术学院",
+                "dev-college": "董里理工职业学院", "dev-purpose": "为支持董里府旅游业而创建",
+                "footer": "© 2025 董里旅游 - 安达曼的魅力", "view-btn": "🔍 查看详情",
+                "act": "活动:", "go": "交通指南:", "tip": "小贴士:"
+            }
+        };
+
+        const db = {
+            att: [
+                { id: 1, tag: "ทะเล", th: "เกาะกระดาน", en: "Koh Kradan", cn: "格拉丹岛", img: "https://arapapashop.com/wp-content/uploads/2023/04/image-2.png", d_th: "แชมป์ชายหาดที่ดีที่สุดในโลกปี 2023 โดดเด่นด้วยทรายขาวละเอียดราวกับแป้งและน้ำทะเลใสราวกระจกจนมองเห็นฝูงปลาและแนวปะการังได้จากริมหาด บรรยากาศเงียบสงบเหมาะแก่การพักผ่อนอย่างแท้จริง", d_en: "Ranked as the world's best beach in 2023, Koh Kradan features powdery white sand and crystal-clear turquoise waters. You can see coral reefs directly from the shore.", d_cn: "2023年被评为世界最佳海滩，格拉丹岛拥有如粉末般细白的沙滩和清澈透明的海水。从岸边即可直接看到珊瑚礁和热带鱼。", act_th: "ดำน้ำตื้นหน้าหาด, พายเรือคายัค", act_en: "Snorkeling, Kayaking", act_cn: "潜水, 划皮划艇", go_th: "เรือหางยาวจากท่าเรือปากเมง 45 นาที", go_en: "Longtail boat from Pak Meng Pier (45m)", go_cn: "从帕明码头乘船45分钟", tip_th: "ควรไปช่วง พ.ย. - เม.ย.", tip_en: "Best time: Nov - Apr", tip_cn: "最佳时间：11月至4月" },
+                { id: 2, tag: "Unseen", th: "ถ้ำมรกต", en: "Emerald Cave", cn: "翡翠洞", img: "https://cbtthailand.dasta.or.th/upload-file-api/Resources/RelateAttraction/Images/RAT920027/1.jpeg", d_th: "หนึ่งในจุดหมายปลายทาง Unseen Thailand ที่ต้องมาสัมผัสด้วยการลอยคอฝ่าความมืดเข้าไปภายในตัวถ้ำระยะทางกว่า 80 เมตร เพื่อพบกับหาดทรายขาวและน้ำทะเลสีมรกตที่ถูกโอบล้อมด้วยหน้าผาสูงชัน", d_en: "A must-see Unseen Thailand destination where you float through an 80-meter dark sea cave to discover a hidden lagoon with emerald waters and towering cliffs.", d_cn: "泰国奇观之一，游客需在黑暗的海洞中漂浮约80米，方能到达隐藏的泻湖。洞内白沙绿水，四周环绕着高耸的绝壁，景色令人叹为观止。", act_th: "เกาะเชือกลอยคอเข้าถ้ำ", act_en: "Floating through the tunnel", act_cn: "穿过隧道进入洞穴", go_th: "เหมาเรือจากปากเมงหรือควนตุ้งกู", go_en: "Boat from Pak Meng Pier", go_cn: "从帕明码头乘船", tip_th: "ต้องเช็คเวลาน้ำขึ้นน้ำลง", tip_en: "Check the tide schedule", tip_cn: "检查潮汐表" },
+                { id: 3, tag: "ธรรมชาติ", th: "เกาะลิบง", en: "Koh Libong", cn: "利邦岛", img: "https://cms.dmpcdn.com/travel/2021/03/28/e8169af0-8f85-11eb-b0ce-056bea7b0664_original.jpg", d_th: "เกาะที่ใหญ่ที่สุดในจังหวัดตรังและเป็นบ้านหลังสุดท้ายของฝูงพะยูนในประเทศไทย สัมผัสวิถีชีวิตชาวประมงพื้นบ้านที่เรียบง่าย พร้อมชมความมหัศจรรย์ของสะพานหินธรรมชาติและทุ่งหญ้าทะเลอันอุดมสมบูรณ์", d_en: "The largest island in Trang and the primary sanctuary for Thailand's last group of dugongs. Experience the local fishing way of life and visit the natural stone bridge.", d_cn: "董里府最大的岛屿，也是泰国最后的儒艮栖息地。在这里可以体验纯朴的渔民生活方式，参观天然石桥，并探索广阔茂盛的海草床。", act_th: "ล่องเรือส่องพะยูน, ชมสะพานหิน", act_en: "Dugong watching, Stone bridge", act_cn: "看儒艮, 天然石桥", go_th: "ขึ้นเรือที่ท่าเรือหาดยาว", go_en: "Boat from Hat Yao Pier", go_cn: "从合耀码头乘船", tip_th: "พะยูนมักออกมาตอนน้ำขึ้น", tip_en: "Dugongs appear at high tide", tip_cn: "儒艮在高潮时出现" },
+                { id: 4, tag: "ประวัติศาสตร์", th: "สถานีรถไฟกันตัง", en: "Kantang Station", cn: "干当火车站", img: "https://media.readthecloud.co/wp-content/uploads/2017/08/30162752/travel-rail-trang-8.webp", d_th: "สถานีรถไฟสุดทางสายอันดามันที่มีอายุกว่าร้อยปี ตัวอาคารไม้ชั้นเดียวทรงปั้นหยาตกแต่งด้วยลวดลายฉลุไม้ทาสีเหลืองมัสตาร์ดสลับน้ำตาล ถือเป็นโบราณสถานที่มีเสน่ห์และคลาสสิกที่สุดแห่งหนึ่งของไทย", d_en: "A century-old wooden railway station marking the end of the Andaman line. The mustard-yellow building features beautiful carvings, standing as a charming historic landmark.", d_cn: "拥有百年历史的木质火车站，是安达曼铁路线的终点。这座芥末黄色的建筑拥有精美的木雕装饰，是泰国最迷人且极具历史感的地标之一。", act_th: "ถ่ายรูปอาคารไม้สมัย ร.6", act_en: "Vintage photography", act_cn: "怀旧摄影", go_th: "30 นาทีจากตัวเมืองตรัง", go_en: "30 mins drive from Trang town", go_cn: "从董里市开车30分钟", tip_th: "มีรถไฟเข้าบ่ายวันละขบวน", tip_en: "One train arrives daily in afternoon", tip_cn: "每天下午有一班火车到达" },
+                { id: 5, tag: "ผจญภัย", th: "ถ้ำเลเขากอบ", en: "Le Khao Kob Cave", cn: "考郭洞", img: "https://f.ptcdn.info/961/076/000/ra7hn57uht5f7MADYGP-o.jpg", d_th: "ท้าทายความกล้าด้วยการนอนราบไปกับเรือเพื่อลอดผ่านเพดานถ้ำที่ต่ำมากในส่วนที่เรียกว่า 'ลอดท้องมังกร' ภายในมีหินงอกหินย้อยที่สวยงามและหลากหลายห้องถ้ำให้เดินสำรวจท่ามกลางบรรยากาศผจญภัย", d_en: "An adrenaline-pumping experience where you lie flat in a boat to squeeze under a very low cave ceiling known as the 'Dragon's Belly.' Discover stunning stalactites inside.", d_cn: "一场令人心跳加速的探险，游客必须平躺在小船上，通过被称为“龙腹”的极低洞顶。洞内拥有令人惊叹的钟乳石，分布在多个石灰岩洞室中。", act_th: "นั่งเรือพายชมหินงอกหินย้อย", act_en: "Boat tour through stalactites", act_cn: "观赏钟乳石游船", go_th: "ห่างจากตัวเมืองตรัง 20 กม.", go_en: "20 km from Trang town", go_cn: "距离董里市20公里", tip_th: "ต้องนอนราบไปกับเรือ", tip_en: "Must lie flat in the boat", tip_cn: "必须平躺ใน船上" },
+                { id: 6, tag: "จุดชมวิว", th: "หาดปากเมง", en: "Pak Meng Beach", cn: "帕明海滩", img: "https://f.tpkcdn.com/images-720/632646237e8c43bafd7a452a499c7988.jpg", d_th: "ชายหาดรูปพระจันทร์เสี้ยวที่เป็นประตูสู่ทะเลตรัง โดดเด่นด้วยทิวทัศน์ของเขาเมงที่ตั้งตระหง่านอยู่กลางทะเลคล้ายคนนอนหงาย เป็นจุดชมพระอาทิตย์ตกที่สวยที่สุดแห่งหนึ่งและมีร้านอาหารซีฟู้ดสดๆ ให้เลือกมากมาย", d_en: "A crescent-shaped beach serving as the gateway to Trang's islands. Famous for the silhouette of Khao Meng mountain, it offers stunning sunset views and vibrant seafood dining.", d_cn: "新月形海滩，是前往董里各岛屿的主要门户。这里以海中形似卧人的“明山”轮廓而闻名，提供董里最美的日落景观，海滩边还有众多的海鲜餐厅。", act_th: "ทานซีฟู้ดริมหาด, ชมพระอาทิตย์ตก", act_en: "Sunset dining, beach stroll", act_cn: "海滩晚餐, 日落散步", go_th: "40 กม. จากตัวเมืองตรัง", go_en: "40 km from Trang town", go_cn: "距离董里市40公里", tip_th: "เป็นจุดขึ้นเรือไปเกาะต่างๆ", tip_en: "Main pier for island hopping", tip_cn: "跳岛游的主要码头" },
+                { id: 7, tag: "พักผ่อน", th: "เกาะไหง", en: "Koh Ngai", cn: "牙岛", img: "https://img.wongnai.com/p/400x0/2018/07/26/3d8ca0cfd5944b53ae9789f75cd05aba.jpg", d_th: "สวรรค์แห่งการพักผ่อนที่มีน้ำทะเลใสสีมรกตและหาดทรายขาวบริสุทธิ์ ตัวเกาะเงียบสงบไม่มีถนนรถวิ่ง มีรีสอร์ทตั้งอยู่เรียงรายริมหาด เหมาะสำหรับการมาดำน้ำตื้นชมฝูงปลาและปะการังน้ำตื้นที่ยังสมบูรณ์", d_en: "A peaceful paradise with emerald waters and white sand. The island has no roads, making it perfect for quiet relaxation, snorkeling with tropical fish, and enjoying untouched nature.", d_cn: "拥有翠绿色海水和纯净白沙的度假天堂。岛上没有公路，非常安静，是浮潜观赏热带鱼和珊瑚礁以及享受原始大自然的完美选择。", act_th: "ดำน้ำหน้าหาด, พักผ่อนรีสอร์ท", act_en: "Snorkeling, Resort relaxation", act_cn: "在海边潜水, 度假村休闲", go_th: "สปีดโบ๊ทจากปากเมง", go_en: "Speedboat from Pak Meng Pier", go_cn: "从帕明码头乘快艇", tip_th: "บนเกาะไม่มีตู้ ATM", tip_en: "No ATM on the island", tip_cn: "岛上没有自动取款机" },
+                { id: 8, tag: "แลนด์มาร์ค", th: "อนุสาวรีย์พระยารัษฎาฯ", en: "Phraya Ratsada Monument", cn: "拉沙达纪念碑", img: "https://culturalenvi.onep.go.th/storage/pictures/2020/11/3/Zv4jEZNAqeT8Ora2km2jBwaLXsEvdvJJayMRjrnn.jpeg", d_th: "อนุสาวรีย์ของ 'บิดาแห่งยางพาราไทย' ผู้นำพาต้นยางพาราต้นแรกมาปลูกในไทยและพัฒนาเมืองตรังให้เจริญรุ่งเรือง เป็นสถานที่ศักดิ์สิทธิ์ที่ชาวเมืองและนักท่องเที่ยวนิยมมาสักการะเพื่อความเป็นสิริมงคล", d_en: "A monument honoring the 'Father of Thai Rubber' who planted the first rubber tree in Thailand. It's a sacred site where locals and visitors come to pay respect to the city's founder.", d_cn: "纪念泰国第一棵橡胶树种植者“泰国橡胶之父”的纪念碑。这是一个神圣的地方，当地居民和游客都会来到这里，向这位城市的创始人表示敬意。", act_th: "สักการะเพื่อความเป็นสิริมงคล", act_en: "Pay respect to city founder", act_cn: "参拜城市创始人", go_th: "อยู่ในเขตเทศบาลเมืองตรัง", go_en: "Located in Trang town center", go_cn: "位于董里市中心", tip_th: "มักมาช่วงเช้าหรือเย็น", tip_en: "Visit in morning/evening", tip_cn: "早晚参观最好" },
+                { id: 9, tag: "ป่าไม้", th: "สวนพฤกษศาสตร์ทุ่งค่าย", en: "Thung Khai Garden", cn: "通开植物园", img: "https://botany.dnp.go.th/image/Gardens/BKF_gardens/05012_main1.jpg", d_th: "สัมผัสธรรมชาติป่าดิบชื้นผ่านทางเดินเหนือยอดไม้ (Canopy Walkway) ที่มีความสูงถึง 18 เมตร และยาวกว่า 175 เมตร ให้คุณได้ชมความงามของป่าไม้และสิ่งมีชีวิตในระดับสายตาที่หาชมได้ยากในมุมปกติ", d_en: "Explore tropical rainforests via a 18-meter-high Canopy Walkway. This 175-meter bridge lets you observe the lush forest and wildlife from an extraordinary treetop perspective.", d_cn: "通过18米高的树顶步道探索热带雨林。这座175米长的吊桥让您能从非凡的树冠视角观察茂盛的森林和野生动植物。", act_th: "เดินสะพานเรือนยอดไม้สูง 18 ม.", act_en: "Canopy walkway experience", act_cn: "体验树顶步道", go_th: "ห่างจากเมืองตรัง 11 กม.", go_en: "11 km from Trang town", go_cn: "距离董里市11公里", tip_th: "ควรพกยากันยุงไปด้วย", tip_en: "Bring insect repellent", tip_cn: "带上驱虫剂" }
+            ],
+            food: [
+                { id: 10, tag: "Signature", th: "หมูย่างตรัง", en: "Trang Roast Pork", cn: "董里烤猪", img: "https://www.mocagrimart.com/th/file/get/file/202308040ae13a34dd2cd46c790c2a7d92ea6272082755.jpg", d_th: "เมนูเอกลักษณ์ที่เป็นความภูมิใจของชาวตรัง โดดเด่นด้วยสูตรหมักเครื่องยาจีนรสชาติเข้มข้น หอมหวาน ย่างจนหนังกรอบสนิทและเนื้อด้านในนุ่มชุ่มฉ่ำ นิยมทานเป็นมื้อเช้าคู่กับกาแฟหรือติ่มซำ", d_en: "Trang's pride, this roast pork is marinated in Chinese spices for a unique sweet-savory flavor. Roasted to perfection with crispy skin and tender meat, it's a breakfast staple.", d_cn: "董里人的骄傲，这种烤猪用秘制中式香料腌制，风味浓郁回甜。外皮烤至金黄酥脆，肉质软嫩多汁，是当地人常配咖啡食用的经典早餐。", act_th: "ทานตอนเช้ากับกาแฟโกปี๊", act_en: "Morning breakfast with Kopi", act_cn: "早晨配咖啡食用", go_th: "มีขายทุกตลาดในเมือง", go_en: "Available at all town markets", go_cn: "在所有城镇市场都有售", tip_th: "สูตรดั้งเดิมจะหวานนำ", tip_en: "Original recipe is sweet-based", tip_cn: "原始配方偏甜" },
+                { id: 11, tag: "มื้อเช้า", th: "ติ่มซำเมืองตรัง", en: "Trang Dim Sum", cn: "点心", img: "https://popwaranya.wordpress.com/wp-content/uploads/2015/03/20140303_3_1393800609_437992.jpg", d_th: "วัฒนธรรมการทานมื้อเช้าที่ยิ่งใหญ่ของเมืองตรัง สัมผัสความหลากหลายของติ่มซำนึ่งสดใหม่ที่มีให้เลือกนับสิบเข่ง ทานคู่กับซอสส้มเจื้องสูตรเฉพาะ และหมูย่างเมืองตรังเพื่อเริ่มต้นวันใหม่อย่างมีความสุข", d_en: "Experience Trang's massive breakfast culture with freshly steamed dim sum baskets. Dip them in 'Som Jueng' sauce and pair with roast pork for an authentic local morning.", d_cn: "体验董里宏大的早餐文化，拥有琳琅满目的现蒸点心。蘸上当地特有的“Som Jueng”酱，再配上董里烤猪肉，像当地人一样开启正宗的一天。", act_th: "เลือกหยิบได้ตามใจชอบ", act_en: "Self-selection of baskets", act_cn: "随心选择喜欢的蒸笼", go_th: "ร้านดังอยู่ทั่วหอนาฬิกา", go_en: "Famous shops near Clock Tower", go_cn: "钟楼附近的知名店铺", tip_th: "กินคู่กับซอสส้มเจื้อง", tip_en: "Serve with 'Som Jueng' sauce", tip_cn: "搭配特制酸甜酱" },
+                { id: 12, tag: "ของฝาก", th: "เค้กตรัง", en: "Trang Cake", cn: "董里蛋糕", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ58YhaT_RvNq1rKO1HfpWrppQzsr2peDQQ3w&s", d_th: "ของฝากชื่อดังที่มีเอกลักษณ์คือ 'เค้กมีรู' เนื้อเค้กมีความนุ่มฟูและหอมกลิ่นไข่ผสมกับเนย มีให้เลือกหลากหลายรสชาติ เช่น รสเนย รสใบเตย รสกาแฟ และรสสามรส เป็นสูตรดั้งเดิมที่ไม่มีครีมหน้าเค้ก", d_en: "Famous 'cake with a hole,' known for its light spongy texture and buttery aroma. Available in various flavors like Pandan and Coffee, this traditional cake is frosting-free.", d_cn: "著名的“中间带孔的蛋糕”，以口感轻盈柔软和浓郁奶香著称。有香兰和咖啡等多种口味，这种传统蛋糕没有任何奶油涂层。", act_th: "ซื้อรสใบเตย กาแฟ สามรส", act_en: "Perfect souvenir buy", act_cn: "完美的伴手礼", go_th: "ร้านเค้กขอนรา-ลำภูรา", go_en: "Bakeries in Khon Ra/Lam Phura", go_cn: "坤拉/蓝普拉的的面包店", tip_th: "ไม่มีครีมหน้าเค้ก", tip_en: "No cream frosting", tip_cn: "没有奶油糖霜" },
+                { id: 13, tag: "รสจัด", th: "ขนมจีนน้ำยาปู", en: "Crab Curry Noodle", cn: "螃蟹咖喱米粉", img: "https://img.wongnai.com/p/1920x0/2024/08/23/18b1a693c293437f99e55692efa78b94.jpg", d_th: "ขนมจีนเส้นสดทานคู่กับน้ำแกงกะทิปูรสชาติเข้มข้นถึงใจตามสไตล์ปักษ์ใต้ ใส่เนื้อปูแบบจัดเต็ม ทานคู่กับผักเหนาะสดๆ หลากหลายชนิด ช่วยเพิ่มความอร่อยและความนัวได้อย่างลงตัว", d_en: "Fresh rice noodles served with rich, spicy southern Thai crab curry. Packed with crab meat and served with an unlimited assortment of fresh local vegetables.", d_cn: "新鲜米粉配上浓郁辛辣的泰南螃蟹咖喱。加入大量蟹肉，并配以无限量供应的各类新鲜当地蔬菜，口感层次丰富。", act_th: "ทานคู่ผักเหนาะสดๆ", act_en: "Eat with fresh veggies", act_cn: "配新鲜蔬菜食用", go_th: "ร้านขนมจีนคุณปุ้ม/พงษ์โอชา", go_en: "Various local noodle shops", go_cn: "各种当地面馆", tip_th: "เลือกผักได้ฟรีไม่อั้น", tip_en: "Free unlimited vegetables", tip_cn: "蔬菜免费无限续" },
+                { id: 14, tag: "โบราณ", th: "โกปี๊", en: "Ancient Coffee", cn: "古法咖啡", img: "https://ak-d.tripcdn.com/images/1i66n2224qmjn8akg092B_W_640_0_R5_Q80.jpg", d_th: "กาแฟโบราณรสชาติเข้มข้นที่เป็นส่วนหนึ่งของวิถีชีวิตคนตรัง ชงด้วยถุงผ้าแบบดั้งเดิม ให้รสสัมผัสที่หอมมันและขมกำลังดี นิยมทานคู่กับปาท่องโก๋ (จาโก้ย) จุ่มนมข้นหวานยามเช้า", d_en: "Traditional strong coffee brewed with a cloth bag, a key part of Trang's lifestyle. It has a rich aroma and is typically enjoyed with 'Ja Koy' dough sticks dipped in condensed milk.", d_cn: "用布袋冲泡的传统浓郁咖啡，是董里人生活方式的重要组成部分。香气浓郁，通常配以蘸有炼乳的“油条”一起食用。", act_th: "จิ้มปาท่องโก๋กับกาแฟ", act_en: "Dip dough in coffee", act_cn: "用咖啡蘸油条", go_th: "สภากาแฟในตัวเมือง", go_en: "Town coffee houses", go_cn: "城镇咖啡馆", tip_th: "สั่งคู่จาโก้ย (ปาท่องโก๋)", tip_en: "Order with 'Ja Koy' dough", tip_cn: "和油条一起点" },
+                { id: 15, tag: "จานยักษ์", th: "ราดหน้าซุปเปอร์", en: "Super Gravy Noodle", cn: "超级勾芡面", img: "https://img.wongnai.com/p/400x0/2020/01/16/de0696409fb44ec5afbccbfb89ca28ce.jpg", d_th: "ราดหน้าจานเปลขนาดยักษ์ที่จัดเต็มด้วยวัตถุดิบทางทะเลคุณภาพเยี่ยม ทั้งกุ้งแม่น้ำตัวโต ปู และปลากะพงสดๆ ราดด้วยน้ำซอสรสชาติกลมกล่อม เป็นเมนูขึ้นชื่อที่ใครมาเยือน อ.กันตัง ต้องแวะชิม", d_en: "A massive seafood noodle platter loaded with premium river prawns, crab, and sea bass. Topped with a savory gravy, it's a famous must-try dish in the Kantang district.", d_cn: "超大海鲜面盘，铺满了优质大河虾、螃蟹和石斑鱼。淋上鲜美的芡汁，是干当县著名的必尝美食。", act_th: "แบ่งกันทานหลายคน", act_en: "Good for sharing", act_cn: "适合多人分享", go_th: "ร้านล่อคุ้ง อ.กันตัง", go_en: "Lo Khung, Kantang District", go_cn: "干当县的Lo Khung店", tip_th: "กุ้งแม่น้ำตัวใหญ่มาก", tip_en: "Oversized river prawns", tip_cn: "超大河虾" },
+                { id: 16, tag: "ซีฟู้ด", th: "หอยชักตีนลวก", en: "Wing Shell", cn: "白尼螺", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTknmXo-CS1Mo_9YOouXVguOyDngBzgJ6SiHw&s", d_th: "หอยทะเลพื้นเมืองรสเลิศ นำไปลวกจนสุกกำลังดี เนื้อหอยมีความหวานและกรุบกรอบ มีเอกลักษณ์ที่ส่วนปลายแหลมคล้ายตีนที่ใช้ชักเนื้อหอยออกมา ทานคู่กับน้ำจิ้มซีฟู้ดรสแซ่บคือที่สุด", d_en: "A delicious local shellfish, blanched to perfection for a sweet and crunchy texture. Pulled out by its unique 'wing' and dipped in spicy lime sauce, it's a seafood favorite.", d_cn: "鲜美的地方贝类，焯水至恰到好处，口感甜脆。通过其独特的“小翅膀”拉出肉来，蘸上辛辣的青柠酱，是海鲜爱好者的首选。", act_th: "ดึงหอยจิ้มซีฟู้ดแซ่บๆ", act_en: "Dip in spicy lime sauce", act_cn: "蘸辛辣青柠酱", go_th: "ร้านอาหารริมหาดปากเมง", go_en: "Pak Meng beach restaurants", go_cn: "帕明海滩餐厅", tip_th: "หอยต้องสดถึงจะดึงง่าย", tip_en: "Fresh shells pull out easily", tip_cn: "新鲜的螺很容易拉出来" },
+                { id: 17, tag: "สุขภาพ", th: "ข้าวยำปักษ์ใต้", en: "Southern Rice Salad", cn: "南方凉拌饭", img: "https://i.ytimg.com/vi/EcAJ8HLnAzs/hq720.jpg", d_th: "เมนูสุขภาพที่รวมสมุนไพรสดหลากหลายชนิดเข้าด้วยกัน คลุกเคล้ากับข้าวสวย มะพร้าวคั่ว และกุ้งแห้งป่น ราดด้วยน้ำบูดูรสชาติเข้มข้นหอมกรุ่น ให้รสสัมผัสที่สดชื่นและได้สารอาหารครบถ้วน", d_en: "A healthy salad of fresh herbs, rice, toasted coconut, and dried shrimp, all mixed with aromatic Budu sauce. It offers a refreshing taste and is packed with nutrients.", d_cn: "一道由新鲜草药、米饭、烤椰丝和干虾组成的健康沙拉，全部拌入浓郁的鱼露酱中。口感清新且营养丰富。", act_th: "คลุกมะพร้าวคั่วและบูดู", act_en: "Mix with toasted coconut", act_cn: "拌入烤椰丝", go_th: "ร้านอาหารเช้าทั่วไป", go_en: "Most breakfast spots", go_cn: "大多数早餐点", tip_th: "น้ำบูดูต้องหอม ไม่คาว", tip_en: "Quality Budu is aromatic", tip_cn: "优质的鱼露酱很香" },
+                { id: 18, tag: "ท้องถิ่น", th: "หมูคั่วเกลือ", en: "Fried Pork with Salt", cn: "盐煸五花肉", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNVbwopesUGdQnZIJxOKwKD7hA8fth5rf_eg&s", d_th: "หมูสามชั้นนำมาคั่วกับเกลือและกระเทียมจนหนังมีความกรอบสีเหลืองทองแต่เนื้อด้านในยังคงความนุ่ม รสชาติเค็มพอดีๆ ตัดกับความมันของหมู เป็นเมนูที่ดูธรรมดาแต่ทานกี่ครั้งก็ไม่เบื่อ", d_en: "Pork belly fried with salt and garlic until golden and crispy outside while remaining juicy inside. A simple yet addictive savory dish that pairs perfectly with jasmine rice.", d_cn: "五花肉与盐和大蒜一起炸至外表金黄酥脆，内里保持多汁。一道简单却令人上瘾的咸鲜佳肴，与茉莉香米完美搭配。", act_th: "ทานกับข้าวสวยร้อนๆ", act_en: "Eat with hot jasmine rice", act_cn: "配热茉莉香米食用", go_th: "ร้านอาหารตามสั่งทั่วเมือง", go_en: "Any local kitchen", go_cn: "任何当地小厨", tip_th: "ต้องมีกระเทียมเจียวเยอะๆ", tip_en: "Best with fried garlic", tip_cn: "配炸蒜末最好" }
+            ],
+            stay: [
+                { id: 19, tag: "แลนด์มาร์ค", th: "โรงแรมเรือรัษฎา", en: "Rua Rasada Hotel", cn: "帆船酒店", img: "https://media-cdn.tripadvisor.com/media/photo-s/07/cb/69/eb/swimmingpool.jpg", d_th: "โรงแรมระดับ 5 ดาวที่เป็นแลนด์มาร์คสำคัญของเมืองตรัง ด้วยตัวอาคารที่ออกแบบเป็นรูปเรือสำราญขนาดมหึมา ตั้งอยู่ท่ามกลางบรรยากาศเมืองที่สะดวกสบาย เพียบพร้อมด้วยสิ่งอำนวยความสะดวกและสระว่ายน้ำใหญ่", d_en: "A 5-star landmark of Trang city, this hotel is uniquely designed in the shape of a massive luxury cruise ship. It offers premium comfort, comprehensive facilities, and a giant outdoor pool.", d_cn: "董里市的五星级地标，酒店建筑造型独特，宛如一艘巨大的豪华邮轮。提供顶级的舒适享受、完善的设施和超大户外泳池，非常适合旅客。", act_th: "พักผ่อนหรูสไตล์ 5 ดาว", act_en: "5-star luxury stay", act_cn: "五星级奢华住宿", go_th: "ถ.พัทลุง เมืองตรัง", go_en: "Phatthalung Rd, Trang town", go_cn: "董里市博他仑路", tip_th: "สระว่ายน้ำใหญ่มาก", tip_en: "Giant outdoor swimming pool", tip_cn: "巨大的户外游泳池" },
+                { id: 20, tag: "เกาะกระดาน", th: "Sevenseas Resort", en: "Sevenseas Resort", cn: "七海度假村", img: "https://s.isanook.com/tr/0/ui/281/1409559/the-sevenseas-resort-16_1519562718.jpg", d_th: "รีสอร์ทหรูริมชายหาดบนเกาะที่สวยที่สุดในโลก มอบประสบการณ์พักผ่อนแบบส่วนตัวในวิลล่าสไตล์ทรอปิคอล ตื่นมาชมน้ำทะเลใสราวกระจกได้จากหน้าประตูห้อง พร้อมบริการระดับพรีเมียมท่ามกลางธรรมชาติที่สมบูรณ์", d_en: "A luxury beachfront resort on the world's most beautiful island. Experience private tropical villas where you can enjoy crystal-clear waters right outside your doorstep with premium service.", d_cn: "坐落在世界上最美岛屿上的豪华海滨度假村。在热带风格的私人别墅中享受悠闲时光，出门即可饱览清澈如镜的海景，并享受顶级服务。", act_th: "นอนชมวิวหาดที่ดีที่สุด", act_en: "Beachfront view relax", act_cn: "海滨美景放松", go_th: "นั่งเรือจากท่าปากเมง", go_en: "Boat from Pak Meng Pier", go_cn: "从帕明码头乘船", tip_th: "เหมาะกับคู่รักฮันนีมูน", tip_en: "Perfect for honeymoons", tip_cn: "度蜜月的完美选择" },
+                { id: 21, tag: "ใจกลางเมือง", th: "ธรรมรินทร์ ธนา", en: "Thumrin Thana", cn: "塔玛林塔纳酒店", img: "https://ak-d.tripcdn.com/images/0580f12000iceabqiE99A_R_960_660_R5_D.jpg", d_th: "โรงแรมระดับมาตรฐานใจกลางเมืองตรัง สะดวกสบายด้วยการเดินทางที่ใกล้กับสถานีรถไฟและแหล่งรวมของกินยามเช้า ห้องพักมีขนาดกว้างขวางและมีวิวเมืองตรังที่สวยงาม เป็นตัวเลือกที่ดีที่สุดสำหรับการมาพักผ่อนในเมือง", d_en: "A standard hotel in the heart of Trang city, offering convenience near the train station and local breakfast markets. Spacious rooms with great city views make it an ideal urban choice.", d_cn: "位于董里市中心的标准酒店，邻近火车站和当地早市，交通便利。宽敞的房间和优美的城市景观使其成为城市住宿的理想之选。", act_th: "เดินตลาดนัดรถไฟได้ใกล้ๆ", act_en: "Walk to Night Market", act_cn: "步行前往夜市", go_th: "กลางเมืองตรัง", go_en: "Trang city center", go_cn: "董里市中心", tip_th: "โรงแรมใหญ่ จัดเลี้ยงเก่ง", tip_en: "Great for big groups", tip_cn: "适合大群体" },
+                { id: 22, tag: "เกาะมุก", th: "Sivalai Resort", en: "Sivalai Resort", cn: "西瓦莱度假村", img: "https://www.chillpainai.com/src/wewakeup/scoop/images/27081c41b671d5374222af4542cff49503762d9c.jpg", d_th: "รีสอร์ทสุดหรูที่ตั้งอยู่บนปลายแหลมของเกาะมุก โดดเด่นด้วยทรายขาวขนาบข้างทั้งสองด้านของที่พักจนได้รับฉายา 'มัลดีฟส์เมืองไทย' มอบบรรยากาศพักผ่อนที่เหนือระดับพร้อมวิวทะเลอันดามันแบบพาโนรามา", d_en: "A premium luxury resort located on the tip of Koh Mook. With white sand beaches on both sides, it's often called the 'Maldives of Thailand,' offering a high-end escape with panoramic views.", d_cn: "坐落在珍珠岛海角尖端的高级豪华度假村。两面环绕着洁白的沙滩，常被称为“泰国的马尔代夫”，提供全方位安达曼海景的高端避世体验。", act_th: "เดินหาดขาวขนาบสองข้าง", act_en: "Double-sided beach walk", act_cn: "双面沙滩散步", go_th: "เรือจากท่าควนตุ้งกู", go_en: "Boat from Kuan Tung Ku Pier", go_cn: "从宽通古码头乘船", tip_th: "จองบ้านปลายแหลมจะฟินมาก", tip_en: "Cape villas have best views", tip_cn: "海角别墅景观最好" },
+                { id: 23, tag: "Glamping", th: "กะช่องฮิลส์", en: "Kachong Hills", cn: "卡冲山度假村", img: "https://media-cdn.tripadvisor.com/media/photo-s/2b/6b/b7/aa/exclusive-explorer-tent.jpg", d_th: "สัมผัสประสบการณ์นอนเต็นท์หรูท่ามกลางหุบเขาและไร่กาแฟ (Glamping) อากาศเย็นสบายตลอดปี พร้อมกิจกรรมชมพระอาทิตย์ขึ้นเหนือทะเลหมอกในตอนเช้า เป็นการพักผ่อนท่ามกลางธรรมชาติที่หรูหราและลงตัว", d_en: "Experience luxury glamping among valleys and coffee plantations. Enjoy cool weather year-round and breathtaking sunrises over the mist, blending nature with high-end comfort.", d_cn: "在山谷和咖啡种植园中体验豪华露营。全年气候凉爽，早晨可以欣赏壮观的云海日出，是自然与奢华的完美结合。", act_th: "จิบกาแฟสดกะช่อง", act_en: "Fresh local coffee tasting", act_cn: "品尝当地新鲜咖啡", go_th: "ทางไป จ.พัทลุง", go_en: "Route towards Phatthalung", go_cn: "往博他仑方向", tip_th: "หน้าหนาวอากาศเย็นมาก", tip_en: "Very cool in winter", tip_cn: "冬天非常凉爽" },
+                { id: 24, tag: "วินเทจ", th: "โรงแรมศรีตรัง", en: "Sri Trang Hotel", cn: "诗董里酒店", img: "https://ak-d.tripcdn.com/images/0206t120009mvnsuqD20A_R_960_660_R5_D.jpg", d_th: "โรงแรมบูติกสไตล์ย้อนยุคที่รีโนเวทจากอาคารเก่าให้มีความคลาสสิก ตกแต่งด้วยเฟอร์นิเจอร์ไม้วินเทจและงานศิลปะท้องถิ่น ตั้งอยู่ตรงข้ามสถานีรถไฟตรัง ทำให้สะดวกมากในการออกไปเดินหาของกินยามเช้าและกลางคืน", d_en: "A vintage boutique hotel renovated from a historic building. Decorated with vintage wooden furniture and local art, its location opposite the train station makes it incredibly convenient.", d_cn: "由历史建筑翻新而成的复古精品酒店。装饰有复古木家具和当地艺术品，位于火车站对面，交通和用餐都非常方便。", act_th: "ถ่ายรูปสไตล์ย้อนยุค", act_en: "Vintage style photo ops", act_cn: "复古风格拍照点", go_th: "ตรงข้ามสถานีรถไฟ", go_en: "Opposite the train station", go_cn: "火车站对面", tip_th: "เดินหาของกินเช้าง่ายมาก", tip_en: "Easy walk for breakfast", tip_cn: "早餐散步很方便" },
+                { id: 25, tag: "เกาะไหง", th: "ทับวารินทร์", en: "Thapwarin", cn: "塔瓦林度假村", img: "https://img.wongnai.com/p/400x0/2018/07/26/3d8ca0cfd5944b53ae9789f75cd05aba.jpg", d_th: "รีสอร์ทสไตล์เป็นธรรมชาติที่เน้นการใช้วัสดุจากไม้และมุงจาก ตั้งอยู่ริมหาดทรายสีทองบนเกาะไหง ให้บรรยากาศที่เงียบสงบเหมือนเกาะส่วนตัว สามารถลงไปดำน้ำตื้นดูปะการังได้ทันทีจากหน้าชายหาดของรีสอร์ท", d_en: "An eco-friendly resort featuring wooden and thatched-roof huts on Koh Ngai’s golden sands. Enjoy a private island atmosphere and snorkeling right from the resort's beachfront.", d_cn: "位于牙岛金沙滩上的生态友好型度假村，采用木材和草顶建筑。享受私人岛屿般宁静氛围，从度假村海滩即可直接下海浮潜。", act_th: "พายซับบอร์ดหน้าหาด", act_en: "Paddleboarding at beach", act_cn: "在海滩划桨板", go_th: "เรือจากท่าเรือปากเมง", go_en: "Boat from Pak Meng Pier", go_cn: "从帕明码头乘船", tip_th: "บรรยากาศเงียบสงบสุดๆ", tip_en: "Extremely peaceful vibes", tip_cn: "极其宁静的氛围" },
+                { id: 26, tag: "พะยูน", th: "Dugong Village", en: "Dugong Village", cn: "儒艮度假村", img: "https://media-cdn.tripadvisor.com/media/photo-s/1d/02/81/46/dugong-village.jpg", d_th: "ที่พักสไตล์บูติกบนเกาะลิบงที่ออกแบบมาให้อิงแอบไปกับธรรมชาติชายป่าชายเลนและท้องทะเล มีสะพานไม้ที่ทอดยาวไปในทะเลเพื่อชมวิวพระอาทิตย์ตกที่สวยงามที่สุด และเป็นจุดเริ่มต้นที่ดีในการล่องเรือส่องพะยูน", d_en: "A boutique stay on Koh Libong nestled between mangroves and the sea. Its iconic wooden bridge offers the best sunset views and serves as a starting point for dugong boat tours.", d_cn: "位于利邦岛的精品住宿，坐落在红树林与大海之间。其标志性的木桥提供了最美的日落景观，也是儒艮船游的起点。", act_th: "นั่งดูพระอาทิตย์ตกบนสะพาน", act_en: "Sunset on the wooden bridge", act_cn: "木桥日落", go_th: "เรือจากท่าหาดยาว", go_en: "Boat from Hat Yao Pier", go_cn: "从合耀码头乘船", tip_th: "จองเรือไปดูพะยูนได้ที่นี่", tip_en: "Dugong boat tours available", tip_cn: "提供儒艮船游" },
+                { id: 27, tag: "โฮสเทล", th: "A Local Something", en: "A Local Something", cn: "当地特色旅馆", img: "https://www.chillpainai.com/src/wewakeup/scoop/images/b092b4d51b5825f2f454ef25f5645c980ef8fc6a.jpg", d_th: "ที่พักสไตล์โฮสเทลสุดชิคในตัวเมืองตรังที่เน้นการตกแต่งแบบมินิมอลและเป็นกันเอง มีพื้นที่ส่วนกลางให้นั่งจิบกาแฟและแลกเปลี่ยนประสบการณ์กับเพื่อนนักเดินทาง ตั้งอยู่ริมคลองที่เงียบสงบแต่ไม่ไกลจากแหล่งรวมของกิน", d_en: "A chic, minimalist hostel in Trang town with a friendly atmosphere. Its cozy common areas are perfect for swapping travel stories, located by a quiet canal near local food spots.", d_cn: "位于董里镇的时尚极简风格旅馆，氛围友好。舒适的公共区域非常适合分享旅行故事，位于安静的运河边，邻近当地美食点。", act_th: "นั่งชิลล์พื้นที่ส่วนกลาง", act_en: "Relax in common areas", act_cn: "在公共区域放松", go_th: "ริมคลองในเมืองตรัง", go_en: "By the canal in town", go_cn: "镇上的运河边", tip_th: "เจ้าของเป็นกันเองมาก", tip_en: "Owners are super friendly", tip_cn: "主人超级友好" }
+            ]
+        };
+
+        let currentLang = 'th';
+
+        // --- Core Functions ---
+
+        const observerOptions = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('reveal');
+                    }, (index % 3) * 100); 
+                }
+            });
+        }, observerOptions);
+
+        function renderGrid(containerId, data) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            container.innerHTML = data.map(item => `
+                <div class="card" onclick="openPopup(${item.id})" data-view-text="${i18n[currentLang]['view-btn']}">
+                    <img src="${item.img}" class="card-img" loading="lazy">
+                    <div class="card-body">
+                        <span class="tag">${item.tag}</span>
+                        <h3>${item[currentLang]}</h3>
+                        <p class="card-desc">${item['d_' + currentLang]}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            container.querySelectorAll('.card').forEach(card => observer.observe(card));
+        }
+
+        function renderAll() {
+            renderGrid('home-grid', db.att.slice(0, 3));
+            renderGrid('att-grid', db.att);
+            renderGrid('food-grid', db.food);
+            renderGrid('hotel-grid', db.stay);
+        }
+
+        function changeLang(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.querySelector(`.lang-btn[onclick="changeLang('${lang}')"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            document.querySelectorAll('[data-key]').forEach(el => { el.innerText = i18n[lang][el.getAttribute('data-key')]; });
+            document.querySelectorAll('[data-placeholder]').forEach(el => { el.placeholder = i18n[lang][el.getAttribute('data-placeholder')]; });
+            renderAll();
+        }
+
+        function switchTab(tabId) {
+            const sections = document.querySelectorAll('section');
+            sections.forEach(s => { s.style.opacity = '0'; });
+
+            setTimeout(() => {
+                sections.forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.nav-menu button').forEach(b => b.classList.remove('active'));
+                
+                const targetSection = document.getElementById(tabId);
+                targetSection.classList.add('active');
+                setTimeout(() => targetSection.style.opacity = '1', 10);
+                
+                const btn = document.getElementById('btn-' + tabId);
+                if(btn) btn.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 200);
+        }
+
+        function openPopup(id) {
+            const all = [...db.att, ...db.food, ...db.stay];
+            const item = all.find(i => i.id === id);
+            if (!item) return;
+
+            const modal = document.getElementById('modal');
+            const dynamic = document.getElementById('modal-dynamic-content');
+            
+            dynamic.innerHTML = `
+                <img src="${item.img}" class="modal-header-img">
+                <div class="modal-body">
+                    <h2 class="modal-title">${item[currentLang]}</h2>
+                    <p style="margin-bottom:15px; font-weight:500; font-size:1.1rem;">${item['d_' + currentLang]}</p>
+                    <ul class="modal-info-list">
+                        <li><strong>${i18n[currentLang]['act']}</strong> ${item['act_' + currentLang]}</li>
+                        <li><strong>${i18n[currentLang]['go']}</strong> ${item['go_' + currentLang]}</li>
+                        <li><strong>${i18n[currentLang]['tip']}</strong> ${item['tip_' + currentLang]}</li>
+                    </ul>
+                </div>
+            `;
+            
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModalBtn() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        function closeModal(e) { if(e.target.id === 'modal') closeModalBtn(); }
+
+        window.onscroll = function() {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            document.getElementById("scrollBar").style.width = scrolled + "%";
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            changeLang('th');
+        });
+    </script>
+</body>
+</html>
